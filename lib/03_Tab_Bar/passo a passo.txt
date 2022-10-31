@@ -1,0 +1,117 @@
+01 - Iniciar o projeto Stateless utilizando o layout padrão (arq.: 02_Layout_modelo.dart) criando o arquivo: main.dart
+
+02 - Criar o diretório pages 
+
+03 - Dentro do arquivo pages criar os arquivos: home_page.dart, anuncios_page.dart, dados_page.dart e favoritos_page.dart
+
+04 - Recortar a classe Home do arquivo main e colar seus dados na página home_page.dart
+
+05 - No arquivo home_page.dart  efetuar o import:  import 'package:flutter/material.dart';
+
+06 - Para resolver os erros do arquivo main.dart importar a classe HomePage do arquivo home_page.dart
+
+07 - No arquivo anuncios_page.dart, criar uma classe StatelessWidget com um conteúdo básico conforme a seguir:
+
+import 'package:flutter/material.dart';
+
+class AnunciosPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.green,
+        child: Center(
+          child: Text(
+            "Página de Anúncios",
+            style: TextStyle(
+              fontSize: 22,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+08 - No arquivo dados_page.dart, criar uma classe StatelessWidget com um conteúdo básico conforme a seguir:
+
+import 'package:flutter/material.dart';
+
+class DadosPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.blue,
+        child: Center(
+          child: Text(
+            "Página de Dados",
+            style: TextStyle(
+              fontSize: 22,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+09 - No arquivo favoritos_page.dart, criar uma classe StatelessWidget com um conteúdo básico conforme a seguir:
+
+import 'package:flutter/material.dart';
+
+class FavoritosPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.yellow,
+        child: Center(
+          child: Text(
+            "Página de Favoritos",
+            style: TextStyle(
+              fontSize: 22,
+              color: Colors.green,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+10 - No arquivo HomePage apagar todo o conteúdo de body:
+
+11 - Testar cada uma das páginas criadas inserindo na propriedade body:
+      body: const AnunciosPage(),
+      // body: const DadosPage(),
+      // body: const FavoritosPage(),
+Lembrando de efetuar os respectivos imports de cada uma das classes acima
+
+12 - Envolver o Scaffold com o Widget DefaultTabController e inserir a proriedade length: 3, para indicar a quantidade de abas do menu
+
+13 - Dentro a propriedade AppBar depois da propriedade centerTitle, inserir uma vírgula e a propriedade "botton:" responsável por criar cada uma das Tabs do menu e definir os ícones de cada tab:
+
+    bottom: TabBar(tabs: [
+        Tab(icon: Icon(Icons.announcement)),
+        Tab(icon: Icon(Icons.cloud)),
+        Tab(icon: Icon(Icons.favorite)),
+        ]),
+
+14 - Para criar a navegação entre as telas, inserir na propriedade body: as chamadas para cada uma das páginas:
+
+	body: const TabBarView(
+	  children: [
+		AnunciosPage(),
+		DadosPage(),
+		FavoritosPage(),
+	  ],
+	),
+
+15 - Agora o TabBar já estará com a navegação entre as tabs funcionando

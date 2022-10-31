@@ -1,0 +1,141 @@
+01 - Iniciar o projeto Stateless utilizando o layout padrão (arq.: 02_Layout_modelo.dart) criando o arquivo: main.dart
+
+02 - Copiar o conteúdo da classe HomePage para um novo arquivo: home_page.dart
+
+03 - No arquivo main.dart efetuar o import da classe HomePage
+
+04 - No início da classe HomePage antes de @override, adicionar a variável:
+
+	var _paginaAtual = 0;
+
+05 - Para corrigir o erro da classe HomePage, clicar com o botão do mouse sobre HomePage e para corrigir o problema: converter para uma classes Statefull
+
+06 - Criar o diretório pages
+
+07 - Mover o arquivo home_page.dart para dentro da pasta pages e corrigir os imports se for o caso
+
+08 - Ciar os arquivos: anuncios_page.dart, dados_page.dart e favoritos_page.dart
+
+09 - Inserir no arquvo anuncios_page.dart o seguinte conteúdo:
+
+import 'package:flutter/material.dart';
+
+class AnunciosPage extends StatelessWidget {
+  const AnunciosPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.green,
+        child: const Center(
+          child: Text(
+            "Página de Anúncios",
+            style: TextStyle(
+              fontSize: 22,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+10 - Inserir no arquvo dados_page.dart o seguinte conteúdo:
+
+import 'package:flutter/material.dart';
+
+class DadosPage extends StatelessWidget {
+  const DadosPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.blue,
+        child: const Center(
+          child: Text(
+            "Página de Dados",
+            style: TextStyle(
+              fontSize: 22,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+11 - Inserir no arquvo favoritos_page.dart o seguinte conteúdo:
+
+import 'package:flutter/material.dart';
+
+class FavoritosPage extends StatelessWidget {
+  const FavoritosPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.yellow,
+        child: const Center(
+          child: Text(
+            "Página de Favoritos",
+            style: TextStyle(
+              fontSize: 22,
+              color: Colors.green,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+12 - No arquivo home_page.dart, na classe HomePage acima de @override, inserir a lista das Páginas:
+
+	final List<Widget> _paginas = [
+		const AnunciosPage(),
+		const DadosPage(),
+		const FavoritosPage(),
+	  ];
+
+Efetuar os respectivos imports para corrigir os erros
+
+13 - Na propriedade body: remover todo conteúdo inicial e inserir um container e como filho desse container inserir a página atual: child: _paginas.elementAt(_paginaAtual),
+
+14 - Alterar o valor da variável _paginaAtual de 0 para 1 e depois para 2. Dessa forma, será possível navegar para as páginas conforme seu índice na lista de páginas
+
+15 - No Scaffold depois da propriedade body para que seja possível construir os itens do menu, inserir a propriedade:
+
+    bottomNavigationBar: BottomNavigationBar(items: []),
+
+16 - dentro de items, incluir:
+    BottomNavigationBarItem(icon: Icon(Icons.announcement), label: 'Anúncios'),
+    BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Dados'),
+    BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
+
+17 - Logo depois do fechamento do colchete dos itens, inserir a propriedade:
+    currentIndex: _paginaAtual,
+
+18 - Alterar o valor da variável _paginaAtual de 0 para 1 e depois para 2. Dessa forma, será possível navegar para as páginas conforme seu índice na lista de páginas
+
+19 - A navegação entre as páginas já está funcionando, entretando é necessário que esse processo seja automatizado, ou seja, ao clicar nos itens do menu, as páginas precisam ser alteradas. Desta forma, o estado da aplicação precisa ser alterado.
+
+20 - Para que seja possível alterar o estado da aplicação quando se clica nos ícones do menu, incluir (depois de currentIndex):
+
+    onTap: (int index) {
+          setState(() {
+            _paginaAtual = index;
+          });
+       },  
+
+22 - Agora toda vez que o usuário clicar sobre um item do menu (onTap), a função setState "avisa" que o estado da aplicação foi alterado (a página atual foi alterada) e a aplicação precisa ser renderizada 
+
+23 - Se desejar alterar a cor dos ícones do menu, basta incluir (em qualquer posição dentro de BottomNavigationBar) a propriedade:
+    fixedColor: Colors.red,

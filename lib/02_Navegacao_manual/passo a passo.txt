@@ -1,0 +1,75 @@
+01 - Iniciar o projeto Stateless utilizando o layout padrão (arq.: 02.layout_modelo.dart) criando o arquivo: main.dart
+
+02 - Na Classe HomePage, apagar todo o conteúdo da propriedade body: (inclusive o modificador const) e inserir um Widget Center 
+
+03 - Alterar o título da AppBar para 
+	title: Text('HomePage'), 	
+
+04 - Copiar toda estrutura do 'Botão 05' do arquivo: 05.elevated_button.dart
+
+05 - Inserir toda estrutura copiada do ElevatedButton como filha de Center
+
+06 - Em ElevatedButton, corrigir onpressed para:
+	  
+	  onPressed: () {
+		Navigator.push(
+		  context,
+		  MaterialPageRoute(
+			builder: (BuildContext context) => ArquivosPage(),
+		  ),
+		);
+	  },
+	  
+07 - Criar a estrutura básica da classe ArquivosPage (fora da classe HomePage) :
+
+	class ArquivosPage extends StatelessWidget {
+	  @override
+	  Widget build(BuildContext context) {
+		return Scaffold(
+		  appBar: AppBar(
+			title: Text('Página de Arquivos'),
+			centerTitle: true,
+		  ),
+		  body: Container(),
+		);
+	  }
+	}
+
+08 - Como filha de container incluir o widget Center
+
+09 - Copiar toda estrutura do 'Botão 05' do arquivo: 05.elevated_button.dart
+
+10 - Inserir toda estrutura copiada do ElevatedButton como filha de Center
+
+11 - Para diferenciar a página de arquivos, alterar a cor do seu container para green
+
+12 - Em ElevatedButton alterar e inserir novas propriedades em:
+			
+			style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              elevation: 9,	
+			
+			child: SizedBox(
+              width: 150,
+
+13 - Alterar os filhos da Row dentro de ElevatedButton:
+
+			 children: [
+                  Icon(Icons.arrow_back_outlined),
+                  SizedBox(width: 15),
+                  Text('Voltar'),
+                ],
+				
+14 - E finalmente para que seja possível retornar à página principal à partir do botão voltar, inserir o evento em onPressed:
+
+			onPressed: () {
+              Navigator.pop(context);
+            },
+
+15 - Os próximos passos são para separar a aplicação em arquivos 
+
+16 - Criar os arquivos: home_page.dart e arquivos_page.dart
+
+17 - Copiar os respectivos conteúdos para os arquivos criados efetuando os devidos imports
+
+18 - Ao final existirão 3 arquivos e a navegação entre duas páginas

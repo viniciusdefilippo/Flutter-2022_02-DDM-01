@@ -8,9 +8,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 // ********************************
 
 /* 
- -----------------------------------
-  Dicas para fazer esse exemplo:
- -----------------------------------
+ --------------------------------------------
+  Roteiro para desenvolvimento deste exemplo:
+ --------------------------------------------
  
  O Toast não existe no Flutter por padrão, sendo assim é necessário instalar o plugin
  e registrar no arquivo pubspec.yaml

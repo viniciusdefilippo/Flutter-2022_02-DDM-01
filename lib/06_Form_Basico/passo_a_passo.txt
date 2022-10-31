@@ -1,0 +1,450 @@
+
+01 - Iniciar o projeto Stateless utilizando o layout padrão (arq.: 02_Layout_modelo.dart) criando o arquivo: main.dart
+
+02 - Renomear a classe de HomePage() para CadastroPage()
+
+03 - Alterar a propriedade home: para CadastroPage() e alterar o título na AppBar para 'Página de Cadastro'
+
+03 - Apagar todo o conteúdo da propriedade body: (inclusive o modificador const) e inserir um Widget Container. A seguir envolver o Container com um Form. 
+
+04 - O próximo passo é inserir os campos do formulário. Para isso, criar uma column como filha de Container
+
+05 - Cada campo do formulário será um TextFormField. Iserir como primeiro filho de column o primeiro TextFormField. Observe que na aplicação já aparece um local para inserir o texto. Entretanto está sem qualquer tipo de formatação. Para melhorar a apresentação do campo de entrada, inserir no TextFormField a propriedade decoration: InputDecoration()
+
+06 - Dentro de InputDecoration, inserir as seguites propriedades:
+    labelText: 'Nome',
+    hintText: 'Entre com seu nome',
+    border: OutlineInputBorder(borderSide: BorderSide()),
+    
+07 - Observe que apesar da aparência ter melhorado consideravelmente, os elementos estão muito 'colados' às laterais de tela. Dessa forma, inserir em Container a propriedade: padding: EdgeInsets.all(16.0),
+
+08 - Inserir os demais campos do formulário: Sobrenome, E-mail, senha
+
+09 - Depois de criados os demais campos do formulário, inserir um espaçamento entre eles utilizando o componente:  SizedBox(height: 10),
+
+10 - Como último filho da coluna, inserir o botão para submeter o formulário: 
+    ElevatedButton(child: Text('Cadastrar'), onPressed: (){},),
+
+11 - Para melhorar a aparência do botão, inserir após a propriedade child e antes da propriedade onPressed, dentro de ElevatedButton:
+
+     style: ElevatedButton.styleFrom(
+            primary: Colors.green,
+            textStyle: TextStyle(
+            fontSize: 20, fontWeight: FontWeight.bold)),
+
+12 - Como o botão está pequeno em relação aos demais componentes, envolver o ElevatedButton com o componente SizedBox e dentro de SizedBox inserir as seguintes propriedades:
+    width: double.infinity, height: 60, 
+
+13 - Observe que caso o dispositivo seja colocado na posição paisagem, irá aparecer o alerta de overflow. Para resolver esse problema, envolver o componente Form com o Widget: SingleChildScrollView
+
+14 - Agora vamos incluir a navegação entre os campos, para isso inclua em todos os campos a propriedade textInputAction: TextInputAction.next, e no campo de senha: textInputAction: TextInputAction.done,
+
+15 - Inserir os tipos de entrada de dados.
+Para os campos nome e sobrenome: keyboardType: TextInputType.text,
+Para o campo e-mail: keyboardType: TextInputType.emailAddress,
+e para o campo senha: keyboardType: TextInputType.number,
+
+16 - Específicamente para o campo de senha, incluir a propriedade: obscureText: true,
+
+17 - Específicamente para o campo nome, incluir a propriedade:  autofocus: true, para que possa ser demarcado o focus quando a aplicação iniciar
+
+18 - Para que seja possível criar validações para os campos, será necessário incluir uma chave (key) que será responsável por controlar as informações do formulário. Sendo assim, inserir no início da classe CadastroPage a variável final _formKey = GlobalKey<FormState>();
+
+No caso de erros, retirar os modificadores const de:
+
+home: const CadastroPage(),
+const CadastroPage({Key? key}) : super(key: key);
+
+
+19 - Em Form, incluir a propriedade:  key: this._formKey,
+
+20 - A seguir nos campos de nome, sobrenome, email e senha incluir as propriedades validator
+    
+		validator: (nome) {
+		  if (nome!.isEmpty) {
+			return "Entre com seu nome";
+		  }
+		  return null;
+		},
+
+		validator: (sobrenome) {
+		  if (sobrenome!.isEmpty) {
+			return "Entre com seu sobrenome";
+		  }
+		  return null;
+		},
+		
+		validator: (email) {
+		  if (email!.isEmpty) {
+			return "Entre com seu e-mail";
+		  }
+		  if (!email.contains('@')) {
+			return "O e-mail deve ter um formato como seu.email@mail.com";
+		  }
+		  if (email.length < 3) {
+			return "E-mail em formato inadequado";
+		  }
+		  return null;
+		},
+
+		validator: (senha) {
+		  if (senha!.isEmpty) {
+			return "Entre com sua senha";
+		  }
+		  if (senha.length < 4) {
+			return "A senha deve ter no mínimo 4 dígitos";
+		  }
+		  return null;
+		},
+
+
+21 - Para que as validações aconteçam é preciso que seja criada uma ação quando o botão de submeter for acionado
+
+22 - Incluir na proprieadade onPressed de ElevatedButton:
+
+		  onPressed: () {
+			if (_formKey.currentState!.validate()) {
+			  print('Formulário Validado!');
+			} else {
+			  print('Formulário com Erros.');
+			}
+		  },
+
+23 - Extrair esse método com o nome _onSubmit
+
+24 - No campo de senha incluir a proprieadade:
+
+    onFieldSubmitted: (value) {
+        _onSubmit();
+    },
+
+
+25 - Criar um novo arquivo validation.dart para inserir a classe Validation e os validadores de campos:
+
+	class Validation {
+	  String? campoNome(String nome) {
+		if (nome.isEmpty) {
+		  return 'Entre com seu nome';
+		}
+		return null;
+	  }
+
+	  String? campoSobreNome(String sobrenome) {
+		if (sobrenome.isEmpty) {
+		  return 'Entre com seu nome';
+		}
+		return null;
+	  }
+
+	  String? campoEmail(String email) {
+		if (email.isEmpty) {
+		  return 'Entre com seu e-mail';
+		}
+		if (!email.contains('@')) {
+		  return 'O email deve ser por exemplo seu-nome@mail.com';
+		}
+		if (email.length < 3) {
+		  return 'E-mail em formato inadequado';
+		}
+		return null;
+	  }
+
+	  String? campoSenha(String senha) {
+		if (senha.isEmpty) {
+		  return 'Entre com sua senha';
+		}
+		if (senha.length < 4) {
+		  return 'A senha deve ter no mínimo 4 dígitos';
+		}
+		return null;
+	  }
+	}
+
+
+26 - No início da classe CadastroPage, declarar a classe Validation:
+    final Validation validar = Validation();
+
+27 - Em cada uma das propriedades validator, apagar os códigos de validação e incluir:
+    validator: (nome) => validar.campoNome(nome.toString()),
+    validator: (sobrenome) => validar.campoSobreNome(sobrenome.toString()),
+    validator: (email) => validar.campoEmail(email.toString()),
+    validator: (senha) => validar.campoSenha(senha.toString()),
+
+
+28 - Inserir um alerta quando o formulário apresentar erros. Vamos então inserir no método _onSubmit, na condição else após a mensagem de erro do formulário, inserir um componente Alert:
+
+		showDialog(
+			context: inContext,
+			barrierDismissible: false,
+			builder: (inContext) {
+			  return WillPopScope(
+				onWillPop: () async => false,
+				child: AlertDialog(
+				  title: Text('Dados Inválidos!'),
+				  actions: [
+					TextButton(
+					  onPressed: () {
+						Navigator.pop(inContext);
+					  },
+					  child: Text('Cancelar'),
+					),
+					TextButton(
+					  onPressed: () {
+						Navigator.pop(inContext);
+					  },
+					  child: Text('OK'),
+					),
+				  ],
+				),
+			  );
+			},
+		  );
+
+		  
+	Repare que para que esse componente funcione, é necessária a variável de contexto. Sendo assim é necessário enviá-la por parâmetro para a função _onSubmit. Dessa forma, corrigir a função e suas chamadas da seguinte forma:
+	
+	- no TextFormField de senha, alterar a proprieadade onFieldSubmitted: 
+	
+		onFieldSubmitted: (value) {_onSubmit(context);},
+	
+	- no ElevatedButton do botão de cadastrar, alterar a propriedade onPressed: 
+	
+		onPressed: () {_onSubmit(context);},
+
+	- na assinatura da função _onSubmit, inserir o novo parâmetro:
+	
+		void _onSubmit(inContext) {
+
+
+	 
+//// Vamos agora nos preparar para enviar dados de uma página para outra via construtor
+
+29 - Criar um novo arquivo pessoa.dart para inserir a classe Pessoa seus atributos
+
+	class Pessoa {
+	  String? nome;
+	  String? sobrenome;
+	  String? email;
+	  String? senha;
+	}
+
+30 - No arquivo main.dart, no início da classe CadastroPage, declarar um objeto da classe Pessoa:
+    final Pessoa usuario = Pessoa();
+
+31 - Inserir em cada TextFormField as propriedades:
+
+    onSaved: (String? value) {
+        usuario.nome = value;
+    },
+
+    onSaved: (String? value) {
+        usuario.sobrenome = value;
+    },
+
+    onSaved: (String? value) {
+        usuario.email = value;
+    },
+
+    onSaved: (String? value) {
+        usuario.senha = value;
+    },
+
+
+
+32 - Efetuar as alterações do método _onSubmit para que fique da seguinte forma:
+
+	void _onSubmit(inContext) {
+		if (_formKey.currentState!.validate()) {
+		  print('Formulário Validado!');
+		  // Salva os dados preenchidos no formulário através
+		  // das propriedades onSaved de cada campo do formulário
+		  _formKey.currentState!.save();
+
+		  // cria a rota de navegação para uma outra Página
+		  // enviando os dados do usuário
+		  Navigator.push(
+			inContext,
+			MaterialPageRoute(
+			  // ao navegar para a página DadosPage, os dados do usuário salvos
+			  // do formulário, são enviados via construtor da nova página
+			  builder: (BuildContext inContext) => DadosPage(usuario),
+			),
+		  );
+		} else {
+		  print('********* Formulário com erros. ********');
+		  showDialog(
+			context: inContext,
+			barrierDismissible: false,
+			builder: (inContext) {
+			  return WillPopScope(
+				onWillPop: () async => false,
+				child: AlertDialog(
+				  title: Text('Dados Inválidos!'),
+				  actions: [
+					TextButton(
+					  onPressed: () {
+						Navigator.pop(inContext);
+					  },
+					  child: Text('Cancelar'),
+					),
+					TextButton(
+					  onPressed: () {
+						Navigator.pop(inContext);
+					  },
+					  child: Text('OK'),
+					),
+				  ],
+				),
+			  );
+			},
+		  );
+		}
+	  }
+
+33 - Criar uma nova página (DadosPage) em um outro arquivo (dados_page.dart) para receber os dados preechidos no formulário
+
+import 'package:app/06_Form_Basico/pessoa.dart';
+import 'package:flutter/material.dart';
+
+class DadosPage extends StatelessWidget {
+  final Pessoa pessoa;
+
+  const DadosPage(this.pessoa);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Dados Pessoais'), centerTitle: true),
+      body: _body(),
+    );
+  }
+
+  Container _body() {
+    return Container(
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            '${pessoa.nome} ${pessoa.sobrenome}',
+            style: TextStyle(fontSize: 30),
+          ),
+          Text(
+            'E-mail: ${pessoa.email}',
+            style: TextStyle(fontSize: 18),
+          ),
+          Text(
+            'Senha: ${pessoa.senha}',
+            style: TextStyle(fontSize: 18),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+/// Criar rotas nomeadas com argumentos ao invés de passar dados pelo Construtor
+
+34 - No arquivo main.dart na classe MyApp, incluir a propriedade routes:
+
+routes: {'/pagina_dados': (context) => DadosPage(),},
+
+35 - No arquivo dados_page.dart:
+
+- Já que os dados serão passados via rota nomeada e não mais pelo construtor, apagar:
+    final Pessoa pessoa;
+    const DadosPage(this.pessoa);
+
+-  Inserir abaixo de Widget build(BuildContext context) {
+
+    final pessoa = ModalRoute.of(context)!.settings.arguments as Pessoa;
+
+- Corrigir a chamada e assinatura do método body para enviar o objeto pessoa:  
+    
+    body: _body(pessoa),
+	
+	Container _body(pessoa)
+
+
+36 - Voltando para o arquivo main.dart:
+
+- Alterar o método _onSubmit para o seguinte:
+
+
+	void _onSubmit(inContext) {
+		if (_formKey.currentState!.validate()) {
+		  print('Formulário Validado!');
+		  // Salva os dados preenchido no formulário através
+		  // das propriedades onSaved de cada campo do formulário
+		  _formKey.currentState!.save();
+
+		  // chama a rota nomeada enviando enviando os dados do usuário
+		  // só que agora os dados do usuário são enviados
+		  // como argumentos da rota
+		  Navigator.of(inContext).pushNamed('/pagina_dados', arguments: usuario);
+		} else {
+		  print('********* Formulário com erros. ********');
+		  showDialog(
+			context: inContext,
+			barrierDismissible: false,
+			builder: (inContext) {
+			  return WillPopScope(
+				onWillPop: () async => false,
+				child: AlertDialog(
+				  title: Text('Dados Inválidos!'),
+				  actions: [
+					TextButton(
+					  onPressed: () {
+						Navigator.pop(inContext);
+					  },
+					  child: Text('Cancelar'),
+					),
+					TextButton(
+					  onPressed: () {
+						Navigator.pop(inContext);
+					  },
+					  child: Text('OK'),
+					),
+				  ],
+				),
+			  );
+			},
+		  );
+		}
+	  }
+
+// Organizando as rotas da aplicação
+
+37 - Na classe MyApp no arquivo form_basico.dart, incluir na propriedade routes, a rota home da aplicação e a seguir remover a propriedade home: CadastroPage() uma vez que essa rota já vai estar dentro da proprieadade routes conforme a seguir:
+
+      routes: {
+        '/': (context) => CadastroPage(),
+        '/pagina_dados': (context) => DadosPage(),
+      },
+
+38 - Criar um novo arquivo chamado routes.dart e dentro dele incluir as rotas da aplicação como constantes da seguinte forma:
+
+    class Routes {
+        static const HOME = '/';
+        static const PAGINA_DADOS = '/pagina_dados';
+    }
+
+39 - No arquivo main, importar a classe Routes e consertar a propriedade de rotas da seguinte forma:
+
+    routes: {
+        Routes.HOME: (context) => CadastroPage(),
+        Routes.PAGINA_DADOS: (context) => DadosPage(),
+      },
+
+40 - Consertar a chamada da rota no método _onSubmit para:
+
+	Navigator.of(inContext).pushNamed(Routes.PAGINA_DADOS, arguments: usuario);
+	
+41 - Para finalizar criar o arquivo cadastro_page.dart separando as suas respectivas lógicas e corrigindo os imports
+
+
+	
+	
+	
+	

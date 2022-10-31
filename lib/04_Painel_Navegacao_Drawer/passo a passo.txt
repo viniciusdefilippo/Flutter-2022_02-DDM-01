@@ -1,0 +1,241 @@
+01 - Iniciar o projeto Stateless utilizando o layout padrão (arq.: 02_Layout_modelo.dart) criando o arquivo: main.dart
+
+02 - Substituir o conteúdo de body para:
+		body: const Center(
+				child: Text(
+				  'Home Page',
+				  style: TextStyle(
+					fontSize: 22,
+					fontWeight: FontWeight.bold,
+				  ),
+				),
+			  ),
+
+03 - No Scaffold, incluir abaixo de body, incluir a propriedade: drawer
+
+04 - Como filho de drawer, incluir o widget Drawer
+
+05 - Como filho de Drawer, incluir uma ListView. Como serão utilizados métodos dentro dos filhos de ListView, não incluir o modificador const
+
+06 - Como primeiro filho de ListView, incluir: UserAccountsDrawerHeader com as seguintes propriedades: 
+     accountName: Text('Seu nome e sobrenome'),
+     accountEmail: Text('seuemail@mail.com'),
+     currentAccountPicture: CircleAvatar(
+      backgroundImage: AssetImage('assets/images/bart.jpg'),
+     ),
+
+07 - Inserir o próximo filho de ListView que deve ser um ListTile, com as seguintes propriedades:
+	  leading: const Icon(Icons.announcement),
+	  title: const Text("Anúncios"),
+	  subtitle: const Text("mais informações..."),
+	  trailing: const Icon(Icons.arrow_forward),
+
+08 - Inserir o próximo filho de ListView que deve ser um ListTile, com as seguintes propriedades:
+	  leading: const Icon(Icons.cloud),
+	  title: const Text("Dados"),
+	  subtitle: const Text("mais informações..."),
+	  trailing: const Icon(Icons.arrow_forward),
+
+09 - Inserir o próximo filho de ListView que deve ser um ListTile, com as seguintes propriedades:
+	  leading: const Icon(Icons.star),
+	  title: const Text("Favoritos"),
+	  subtitle: const Text("mais informações..."),
+	  trailing: const Icon(Icons.arrow_forward),
+
+10 - Inserir o próximo filho de ListView que deve ser um ListTile, com as seguintes propriedades:
+	  leading: const Icon(Icons.exit_to_app),
+	  title: const Text("Logout"),
+	  trailing: const Icon(Icons.arrow_forward),
+
+11 - Agora que já estamos com o menu de navegação criado, vamos prepara para a navegação
+
+12 - Inserir em cada um dos ListTile, as respectivas funcionalidades:
+    onTap: () {print("Anúncios");},
+    onTap: () {print("Dados");},
+    onTap: () {print("Favoritos");},
+    onTap: () {print("Logout");},
+
+13 - Verificar se ao clicar nos itens do menu, aparecem as mensagens de Print no debug console
+
+14 - Criar o diretório pages 
+
+15 - Dentro do arquivo pages criar os arquivos: home_page.dart, anuncios_page.dart, dados_page.dart e favoritos_page.dart
+
+16 - No arquivo anuncios_page.dart, criar uma classe StatelessWidget com um conteúdo básico conforme a seguir:
+
+import 'package:flutter/material.dart';
+
+class AnunciosPage extends StatelessWidget {
+  const AnunciosPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.green,
+        child: const Center(
+          child: Text(
+            "Página de Anúncios",
+            style: TextStyle(
+              fontSize: 22,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+17 - No arquivo dados_page.dart, criar uma classe StatelessWidget com um conteúdo básico conforme a seguir:
+
+import 'package:flutter/material.dart';
+
+class DadosPage extends StatelessWidget {
+  const DadosPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        color: Colors.blue,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            const Text(
+              "Página de Dados",
+              style: TextStyle(
+                fontSize: 22,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  child: const Text('Anúncios'),
+                  onPressed: () {
+                    Navigator.pushNamed(context, "/anuncios");
+                  },
+                ),
+                ElevatedButton(
+                  child: const Text('Favoritos'),
+                  onPressed: () {
+                    Navigator.pushNamed(context, "/favoritos");
+                  },
+                ),
+                ElevatedButton(
+                  child: const Text('HomePage'),
+                  onPressed: () {
+                    Navigator.pushNamed(context, "/");
+                  },
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+18 - No arquivo favoritos_page.dart, criar uma classe StatelessWidget com um conteúdo básico conforme a seguir:
+
+import 'package:flutter/material.dart';
+
+class FavoritosPage extends StatelessWidget {
+  const FavoritosPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        color: Colors.purple,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            const Text(
+              "Página de Favoritos",
+              style: TextStyle(
+                fontSize: 22,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  child: const Text('Anúncios'),
+                  onPressed: () {
+                    Navigator.pushNamed(context, "/anuncios");
+                  },
+                ),
+                ElevatedButton(
+                  child: const Text('Dados'),
+                  onPressed: () {
+                    Navigator.pushNamed(context, "/dados");
+                  },
+                ),
+                ElevatedButton(
+                  child: const Text('HomePage'),
+                  onPressed: () {
+                    Navigator.pushNamed(context, "/");
+                  },
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+19 - No arquivo main.dart, recortar o conteúdo da classe Home e colar no arquivo home_page.dart. Para corrigir os erros, efetuar o import: import 'pages/home_page.dart';
+
+20 - No arquivo home_page.dart, para corrigir os erros efetuar o import: import 'package:flutter/material.dart';
+
+21 - Na raiz do projeto, criar o arquivo de rotas: routes.dart e inseir as rotas da aplicação:
+
+Map<String, WidgetBuilder> routes() {
+  return {
+    '/': (context) => HomePage(),
+    '/anuncios': (context) => AnunciosPage(),
+    '/dados': (context) => DadosPage(),
+    '/favoritos': (context) => FavoritosPage(),
+  };
+}
+22 - Efetuar os imports para corrigir os erros:
+  import 'pages/anuncios_page.dart';
+  import 'pages/dados_page.dart';
+  import 'pages/favoritos_page.dart';
+  import 'pages/home_page.dart';
+  
+23 - Vamos agora inserir as rotas na aplicação
+
+24 - No arquivo main.dart, apagar a propriedade: home: HomePage(), e inserir a propriedade: routes: routes(). A seguir importar o arquivo de rotas (routes.dart)
+
+25 - O próximo passo é incluir as rotas no menu de navegação
+
+26 - No arquivo home_page.dart no ListTile de "anúncios", incluir na propriedade onTap:
+    Navigator.pop(context);
+    Navigator.pushNamed(context, "/anuncios");
+
+27 - No arquivo home_page.dart no ListTile de "dados", incluir na propriedade onTap:
+    Navigator.pop(context);
+    Navigator.pushNamed(context, "/dados");
+
+28 - No arquivo home_page.dart no ListTile de "favoritos", incluir na propriedade onTap:
+    Navigator.pop(context);
+    Navigator.pushNamed(context, "/favoritos");
+
+29 - Para que o menu drawer ao abrir não prejudique a visualização da área de notificações do dispositivo como relógio, barra de bateria, etc, envolver todo o widget Drawer com o SafeArea
+
+30 - Extrair métodos para modularizar e componentizar o código
