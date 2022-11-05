@@ -1,0 +1,679 @@
+********************************************
+CRUD - PRODUTOS com SQLite
+********************************************
+
+01 - Criar o arquivo main.dart e iniciar com modelo Padrão: 02.layout_modelo.dart
+
+02 - Separar a aplicação em dois arquivos: main.dart e home_page.dart. 
+
+03 - Efetuar ajustes e imports necessários
+
+04 - Rodar o projeto
+
+05 - Na classe HomePage em Scaffold, atualizar a propriedade appbar para:
+  appBar: AppBar(title: Text('CRUD Produtos'), centerTitle: true),
+
+06 - Clicar com o botão direito do mouse sobre StatelessWidget e refatorar para StatefulWidget
+
+07 - Para utilizarmos o banco de dados no projeto, precisamos incluir no arquivo pubspec.yaml duas dependências abaixo de cupertino_icons que são os plugins:
+
+	- path_provider (https://pub.dev/packages/path_provider)
+	- sqflite (https://pub.dev/packages/sqflite)
+
+	Incluir no arquivo pubspec.yaml:
+	  
+		fluttertoast: ^8.0.9
+		path_provider: ^2.0.11
+		sqflite: ^2.2.0+3
+	  
+08 - Criar um novo arquivo chamado produto.dart e nele incluir o seguinte:
+
+	class Produto {
+	  int? id;
+	  String? nome;
+	  double? preco;
+	  int? quantidade;
+
+	  Produto(this.id, this.nome, this.preco, this.quantidade);
+
+	  Map<String, dynamic> toMap() {
+		var map = <String, dynamic>{
+		  'id': id,
+		  'nome': nome,
+		  'preco': preco,
+		  'quantidade': quantidade,
+		};
+		return map;
+	  }
+
+	  Produto.fromMap(Map<String, dynamic> map) {
+		id = map['id'];
+		nome = map['nome'];
+		preco = map['preco'];
+		quantidade = map['quantidade'];
+	  }
+
+	  @override
+	  String toString() {
+		return "Produto => (id: $id, nome: $nome, preco: $preco, quantidade: $quantidade)";
+	  }
+	}
+
+  
+  
+09 - Criar um novo arquivo chamado produtoDao.dart e nele o seguinte conteúdo:
+
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+
+// ATENÇÃO: fazer o import de produto.dart
+
+class ProdutoDao {
+  static ProdutoDao? _produtoDao;
+  static Database? _database;
+
+  ProdutoDao._createInstance();
+
+  factory ProdutoDao() {
+    if (_produtoDao == null) _produtoDao = ProdutoDao._createInstance();
+    return _produtoDao!;
+  }
+
+  Future<Database> get database async {
+    if (_database == null) _database = await initializeDatabase();
+    return _database!;
+  }
+
+  Future<Database> initializeDatabase() async {
+    String _databaseName = 'produtos.db';
+    Directory directory = await getApplicationDocumentsDirectory();
+    String path = join(directory.path, _databaseName);
+
+    var produtosDatabase =
+        await openDatabase(path, version: 1, onCreate: _createDb);
+    return produtosDatabase;
+  }
+
+  void _createDb(Database db, int newVersion) async {
+    await db.execute("CREATE TABLE produtos ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "nome TEXT,"
+        "preco REAL,"
+        "quantidade INTEGER"
+        ")");
+  }
+
+  void dropTable() async {
+    Database db = await database;
+    await db.execute("DROP TABLE produtos");
+  }
+
+  Future<int> insertProduto(Produto produto) async {
+    Database db = await database;
+    var resultado = await db.insert(
+      'produtos',
+      produto.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+    return resultado;
+  }
+
+  Future<List<Produto>> getProdutos() async {
+    Database db = await database;
+
+    var resultado = await db.query('produtos');
+
+    List<Produto> lista = resultado.isNotEmpty
+        ? resultado.map((item) => Produto.fromMap(item)).toList()
+        : [];
+    return lista;
+  }
+
+  Future<Produto?> getProduto(int id) async {
+    Database db = await database;
+
+    List maps = await db.query(
+      'produtos',
+      columns: ['id', 'nome', 'preco', 'quantidade'],
+      where: "id = ?",
+      whereArgs: [id],
+    );
+
+    if (maps.isNotEmpty) {
+      return Produto.fromMap(maps.first);
+    } else {
+      return null;
+    }
+  }
+
+  Future<int> updateProduto(Produto produto) async {
+    var db = await database;
+
+    int resultado = await db.update(
+      'produtos',
+      produto.toMap(),
+      where: "id = ?",
+      whereArgs: [produto.id],
+    );
+    return resultado;
+  }
+
+  Future<int> deleteProduto(int id) async {
+    var db = await database;
+
+    int resultado = await db.delete(
+      'produtos',
+      where: "id = ?",
+      whereArgs: [id],
+    );
+    return resultado;
+  }
+
+  Future<int> getCount() async {
+    Database db = await database;
+    List<Map<String, dynamic>> list =
+        await db.rawQuery('SELECT COUNT (*) from produtos');
+    int? resultado = Sqflite.firstIntValue(list);
+    return resultado!;
+  }
+
+  Future close() async {
+    Database db = await database;
+    db.close();
+  }
+}
+
+
+10 -  No início da classe: class _HomePageState extends State<HomePage> {
+		
+		- inserir as seguintes variáveis efetuando os respectivos imports:
+	
+		ProdutoDao db = ProdutoDao();
+		List<Produto> _listaProdutos = [];
+		
+		
+11 - Efetuar os imports para ProdutoDAO e Produto
+
+
+12 - Para que possamos testar a aplicação, serão inseridos alguns registros no banco de dados. Para isso precisamos incluir o método initState no iníco da classe _HomePageState, logo após as variáveis criadas no item aterior.
+
+		@override
+		void initState() {
+		super.initState();
+
+		Produto p1 = Produto(1, 'Água mineral com gás', 1.5, 10);
+		Produto p2 = Produto(2, 'Coca cola 600ml', 5.5, 20);
+		Produto p3 = Produto(3, 'Redbull', 6.5, 5);
+		db.insertProduto(p1);
+		db.insertProduto(p2);
+		db.insertProduto(p3);
+
+		db.getProdutos().then((lista) {
+		  setState(() {
+			_listaProdutos = lista;
+		  });
+		});
+	  }
+	  
+	
+13 - Vamos listar os produtos cadastrados na HomePage. Para isso, na propriedade body, inserir um ListView.builder contendo um ListTile com o seguinte conteúdo:
+
+	body: ListView.builder(
+			itemCount: _listaProdutos.length,
+			itemBuilder: (context, index) {
+			  return ListTile(
+				leading: Icon(
+				  Icons.check_circle_rounded,
+				  color: Colors.green,
+				  size: 25,
+				),
+				title: Text(_listaProdutos[index].nome!),
+				subtitle:
+					Text('R\$ ${_listaProdutos[index].preco!.toStringAsFixed(2)}'),
+				trailing: Icon(Icons.arrow_forward),
+				onTap: () {},
+			  );
+			},
+		  ),
+
+14 - Criar uma nova página Statefull para detalhes do produto, com o nome produto_page.dart e com o seguinte conteúdo:
+
+		import 'package:flutter/material.dart';
+
+		class ProdutoPage extends StatefulWidget {
+		  @override
+		  _ProdutoPageState createState() => _ProdutoPageState();
+		}
+
+		class _ProdutoPageState extends State<ProdutoPage> {
+		  @override
+		  Widget build(BuildContext context) {
+			return Scaffold(
+			  appBar: AppBar(title: Text('Produto'), centerTitle: true),
+			  body: null,
+			);
+		  }
+		}
+
+
+15 - Para que seja possível receber os dados do produto enviados pela HomePage, em ProdutoPage, inserir no início da classe um objeto Produto e o construtor da classe:
+
+	class ProdutoPage extends StatefulWidget {
+		
+	  final Produto? produto;
+	  const ProdutoPage({Key? key, this.produto}) : super(key: key);
+	  
+	Apagar a instrução a seguir se existir:
+	const ProdutoPage({Key? key}) : super(key: key);
+	  
+
+16 - Declarar um objeto Produto na classe _ProdutoPageState para que seja possível utilizar os dados do produto no conteúdo da página:
+ 
+	class _ProdutoPageState extends State<ProdutoPage> {
+		late Produto _produto;
+
+
+17 - A seguir, na mesa classe do passo 16, criar o método initState para que seja possível receber o objeto produto que está sendo enviado pela rota da classe HomePage e consequentemente armazenado na variável _produto declarada no item anterior
+
+	 @override
+	  void initState() {
+		super.initState();
+		_produto = Produto.fromMap(widget.produto!.toMap());
+	  }
+	  
+	  
+18 - Para que seja possível testar se os dados estão sendo corretamente enviados, criar a seguinte estrutura na propriedade body do Scaffold da página ProdutoPage
+
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(_produto.id.toString()),
+            Text(_produto.nome!),
+            Text(_produto.preco.toString()),
+          ],
+        ),
+      ), 
+
+
+19 - Na HomePage, inserir na propriedade onTap do componente ListTile, a chamada do método para exibir a página de detalhes do produto:
+
+
+		onTap: () {exibeProdutoPage(_listaProdutos[index]);},
+	
+	
+20 - Criar o método exibeProdutoPage:
+
+		void exibeProdutoPage([Produto? produto]) {
+			Navigator.push(context,
+				MaterialPageRoute(builder: (context) => ProdutoPage(produto: produto)));
+		  }
+
+	- Note que estamos enviando o produto escolhido pela rota
+
+
+21 - Teste a aplicação e ao clicar em um produto na HomePage, será possível visualizar seus dados na página ProdutoPage 
+
+
+22 - Incluir no Scaffold de HomePage um botão do tipo FloatingActionButton para que o usuário possa clicar quando desejar inserir um novo produto:
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          exibeProdutoPage();
+        },
+        child: Icon(Icons.add),
+      ),
+
+
+	- Note que o método chamado tanto na propriedade onTap do ListTile quanto da propriedade onPressed do FloatingActionButton, é a função exibeProdutoPage()
+	
+	- A diferença é que quando se pretende criar um novo produto nenhum objeto produto é enviado para a ProdutoPage. Enquanto no caso da edição de um produto, é necessário o envio do objeto que se deseja modificar
+	
+	- Por esse motivo, o método exibeProdutoPage possui em sua assinatura, um atributo produto opcional
+	
+	
+23 - Agora nesse ponto, se testarmos a aplicação clicando para acrescentar um novo produto, será apresentado um erro, pois nenhum produto será enviado para a ProdutoPage. Dessa forma, em ProdutoPage, corrigir o método initState para:
+
+	  @override
+	  void initState() {
+		super.initState();
+		if (widget.produto == null) {
+		  _produto = Produto(null, '', 0, 0);
+		} else {
+		  _produto = Produto.fromMap(widget.produto!.toMap());
+		}
+	  }
+
+	- Ao testar a aplicação não será mais apresentado erros na ProdutoPage
+
+
+24 - Vamos agora iniciar a preparação para criarmos o formulário para inclusão ou edição de um produto. Para isso na ProdutoPage:
+
+	- substituir body: Center(   por body: SingleChildScrollView(
+	- envolver a Column com um Form 
+	- Deixar os filhos de Column vazios apagando os textos de apreentação utilizados para teste:
+	
+		Text(_produto.id.toString()),
+		Text(_produto.nome),
+		Text(_produto.preco.toString()),
+
+
+25 - No lugar dos ítens apagados, como filhos de Column, inserir para cada campo de Produto os TextFormField:
+
+              TextFormField(
+                keyboardType: TextInputType.text,
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(
+                  labelText: 'Nome do Produto',
+                  hintText: 'Entre com o nome do produto',
+                  border: OutlineInputBorder(borderSide: BorderSide()),
+                ),
+              ),
+			  
+              TextFormField(
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(
+                  labelText: 'Preço',
+                  hintText: 'Entre com o preço',
+                  border: OutlineInputBorder(borderSide: BorderSide()),
+                ),
+              ),
+			  
+              TextFormField(
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.done,
+                decoration: InputDecoration(
+                  labelText: 'Quantidade',
+                  hintText: 'Entre com a quantidade',
+                  border: OutlineInputBorder(borderSide: BorderSide()),
+                ),
+              ),
+
+26 - Para melhorar a apresentação dos campos:
+
+		- inserir em body:, logo abaixo de SingleChildScrollView(
+
+        padding: EdgeInsets.all(10),
+		
+		- entre cada TextFormField, para aumentar o espaçamento entre os campos:
+		SizedBox(height: 10),
+		
+
+		
+27 - Para que seja possível interagir com os textos do formulário, inserir no início da classe _ProdutoPageState as sequintes variáveis:
+
+	final _nomeController = TextEditingController();
+	final _precoController = TextEditingController();
+	final _quantidadeController = TextEditingController();
+	
+	
+	- Trocar o nome da variável Produto _produto; para: Produto _editarProduto; 
+	
+	- Inserir a variável: 
+	
+		bool editado = false;
+	
+	- Alterar o método initState para: 
+	
+	@override
+	  void initState() {
+		super.initState();
+		if (widget.produto == null) {
+		  _editarProduto = Produto(null, '', 0, 0);
+		} else {
+		  _editarProduto = Produto.fromMap(widget.produto!.toMap());
+		  _nomeController.text = _editarProduto.nome!;
+		  _precoController.text = _editarProduto.preco!.toStringAsFixed(2);
+		  _quantidadeController.text = _editarProduto.quantidade.toString();
+		}
+	  }
+	  
+25 - Alterar o conteúdo da appBar para:  
+
+      appBar: AppBar(
+        title: Text(
+          _editarProduto.nome == ''
+              ? 'Novo Produto'
+              : (_editarProduto.nome).toString(),
+        ),
+        centerTitle: true,
+      ),
+	
+	- Repare que agora que o título da ProdutoPage será:
+		'Novo Produto' quando for inserir um novo produto
+		'Nome do Produto' quando for editar um produto
+
+26 - Inserir em cada TextFormField na propriedade controller: seus respectivos controllers:
+
+	controller: _nomeController,
+	controller: _precoController,
+	controller: _quantidadeController,
+	
+
+	
+27 - Para que os dados digitados ou editados pelo usuário possam ser capturados, inserir na propriedade onChanged: (text) de cada TextFormField o seguinte:
+
+	onChanged: (nome) {
+	  editado = true;
+	  setState(() {
+		_editarProduto.nome = nome;
+	  });
+	},
+	
+	onChanged: (preco) {
+	  editado = true;
+	  _editarProduto.preco = double.parse(preco);
+	},
+	
+	onChanged: (quantidade) {
+	  editado = true;
+	  _editarProduto.quantidade = int.parse(quantidade);
+	},
+
+
+28 - No Scaffold de ProdutoPage, inserir o botão floatingActionButton:
+
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.save),
+        onPressed: () {},
+      ),
+
+
+
+29 - No floatingActionButton, efetuar testes para verificar se todos os campos foram preenchidos e apresentar uma mensagem para o usuário caso contrário. Se todos os campos tiverem sido preenchidos, retornar para a HomePage. Em onPressed:  incluir:
+
+	onPressed: () {
+          if ((_editarProduto.nome).toString().isEmpty ||
+              _editarProduto.preco == 0 ||
+              _editarProduto.quantidade == 0) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (inContext) {
+                return WillPopScope(
+                  onWillPop: () async => false,
+                  child: AlertDialog(
+                    title: Text(
+                        'Todos os dados devem ser preenchidos e ou não devem ser nulos!'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(inContext);
+                        },
+                        child: Text('Ok'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          } else {
+            Navigator.pop(context, _editarProduto);
+          }
+        },
+
+
+	
+30 - Para que os dados do formulário sejam salvos, precisamos retorná-los para a HomePage para que seja possível efetuar a chamada do objeto da classe DAO (ProdutoDAO db) responsável por efetivar as alterações no banco de dados. 
+
+
+
+31 - Observe que na ProdutoPage, no final do floatingActionButton, estamos chamando o Navigator.pop e junto com o contexto, estamos enviando também como parâmetro a variável _editarProduto que contém todos os dados preenchidos no formulário. A navegação de rotas permite que retornemos valores via pop para quem chamou a rota via push na HomePage
+
+
+
+32 - Na HomePage, alterar o método exibeProdutoPage inserindo a variável produtoRecebido:
+
+  void exibeProdutoPage([Produto? produto]) async {
+    final produtoRecebido = await Navigator.push(context,
+        MaterialPageRoute(builder: (context) => ProdutoPage(produto: produto)));
+
+    print('>>>>>>>>>>>>>>>>>>>>>>>> PRODUTOS');
+    print(produtoRecebido);
+  }
+  
+  - Teste novamente a aplicação para verificar se o produto enviado pela ProdutoPage está sendo corretamente retornado para a HomePage
+
+
+33 - Para que seja possível salvar ou editar o produto que está sendo recebido na HomePage, basta alterar novamente o método exibeProdutoPage:
+
+    void exibeProdutoPage([Produto? produto]) async {
+    final produtoRecebido = await Navigator.push(context,
+        MaterialPageRoute(builder: (context) => ProdutoPage(produto: produto)));
+
+    print('>>>>>>>>>>>>>>>>>>>>>>>> PRODUTOS');
+    print(produtoRecebido);
+    if (produtoRecebido != null) {
+      if (produto != null) {
+        await db.updateProduto(produtoRecebido);
+      } else {
+        await db.insertProduto(produtoRecebido);
+      }
+      db.getProdutos().then((lista) {
+        setState(() {
+          _listaProdutos = lista;
+        });
+      });
+    }
+  }
+  
+	- Note que foram inseridos no método:
+	
+		- Além do teste para verificar se o produto devolvido pela ProdutoPage não é nulo, um outro teste para verificar se o produto recebido como parâmetro do método é nulo ou não.
+		- Como foi visto anteriormente, o método possui o parâmetro opcional: produto.
+		- Caso esse parâmetro não seja nulo o que se deseja é editar o produto, caso contrário, um novo produto está sendo criado. 
+		- Sendo assim, basta chamar as funções de atualizar ou inserir conforme o caso
+		- Além disso, seja na inclusão de um novo produto, ou na atualização de um novo produto, é necessário atualizar a lista de produtos utilizando o métod setState
+	
+	
+34 - Vamos iniciar o processo para permitir apagar um registro. 
+
+35 - Para isso na HomePage envolver o ListTile com a proprieade: Dismissible
+
+36 - Inserir logo abaixo de Dismissible( suas proriedades:
+
+          Dismissible(
+            key: Key(DateTime.now().microsecondsSinceEpoch.toString()),
+            direction: DismissDirection.startToEnd,
+            background: Container(
+              color: Colors.red,
+              child: Align(
+                alignment: Alignment(-0.9, 0),
+                child: Icon(
+                  Icons.delete,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            onDismissed: (direcao) {},
+
+	
+	
+37 - Em Dismissible, apresentar uma mensagem de confirmação para que o usuário confirme ou não a exclusão do produto. Em ambos os casos, a página precisa ser atualizada e para isso deve ser chamada a função atualizarListaProdutos
+
+
+			onDismissed: (direcao) {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (inContext) {
+                  return WillPopScope(
+                    onWillPop: () async => false,
+                    child: AlertDialog(
+                      title: Text('Deseja mesmo excluir o produto?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(inContext);
+                            atualizarListaProdutos();
+                          },
+                          child: Text('Não'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            removerProduto(_listaProdutos[index].id);
+                            Navigator.pop(inContext);
+                            atualizarListaProdutos();
+                          },
+                          child: Text('Sim'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+	
+	
+38 - Criar o método atualizarListaProdutos:
+	
+	void atualizarListaProdutos() {
+		db.getProdutos().then((lista) {
+		  setState(() {
+			_listaProdutos = lista;
+		  });
+		});
+	  }
+
+
+39 - Criar o método removerProduto:
+  
+    void removerProduto(idProduto) async {
+    await db.deleteProduto(idProduto);
+  }
+  
+  
+40 - Já que agora já temos o método atualizarListaProdutos, efetuar as seguintes alterações na HomePage para aproveitar o método criado:
+
+	- Limpar o método initState retirando as inserções iniciais de produto e substituir o método setState pela chamada do método atualizarListaProdutos:
+	
+	  @override
+	  void initState() {
+		super.initState();
+		atualizarListaProdutos();
+	  }
+	  
+	  - No método exibeProdutoPage, retirar os prints de teste e substituir o método setState pela chamada do método atualizarListaProdutos:
+	  
+		void exibeProdutoPage([Produto? produto]) async {
+			final produtoRecebido = await Navigator.push(context,
+				MaterialPageRoute(builder: (context) => ProdutoPage(produto: produto)));
+			if (produtoRecebido != null) {
+			  if (produto != null) {
+				await db.updateProduto(produtoRecebido);
+			  } else {
+				await db.insertProduto(produtoRecebido);
+			  }
+			  atualizarListaProdutos();
+			}
+		  }
+		  
+		- Com essas alterações, teremos somente uma ocorrência de setState dentro do método atualizarListaProdutos
+		
+		
+	
+	Terminada a aplicação, fica como desafio refatorar o código!
+	
