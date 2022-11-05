@@ -1,0 +1,403 @@
+01 - Iniciar com modelo Padrão: 02.layout_modelo.dart e criar o arquivo main.dart
+
+02 - Separar a aplicação em dois arquivos: main.dart e home_page.dart. 
+
+03 - Efetuar ajustes e imports necessários
+
+04 - No arquivo home_page.dart, Na classe HomePage em Scaffold, atualizar a propriedade appbar para:
+  appBar: AppBar(title: Text('ToDo'), centerTitle: true),
+
+05 - Rodar o projeto
+
+06 - No arquivo home_page.dart, clicar com o botão direito do mouse sobre StatelessWidget e refatorar para StatefulWidget
+
+07 - Logo abaixo de:   class _HomePageState extends State<HomePage> { 
+  Criar uma lista fictícia para podermos efetuar testes na aplicação:
+
+List _listaTarefas = [
+    {'descricao': 'primeira tarefa', 'ok': true},
+    {'descricao': 'segunda tarefa', 'ok': false},
+    {'descricao': 'terceira tarefa', 'ok': true},
+  ];
+
+
+08 - A seguir criar o método initState para poder imprimir a lista e verificar o resultado
+
+  @override
+  void initState() {
+    super.initState();
+
+    print(_listaTarefas);
+  }
+
+
+09 - O layout da aplicação vai apresentar a lista de tarefas e depois um campo de texto para que o usuário possa digitar uma nova tarefa. De acordo com o passo 10,vvamos incluir um ListView.builder e um campo de texto. Esses dois elementos devem ser inseridos como filhos de uma coluna.
+
+10 - Apagar todo o conteúdo da propriedade body: e inserir uma coluna e como seu primeiro filho o ListView.builder envolvido em um Expanded: conforme abaixo:
+         
+          Expanded(
+            child: ListView.builder(
+              itemCount: _listaTarefas.length,
+              itemBuilder: (context, index) {
+                return CheckboxListTile(
+                  title: Text(_listaTarefas[index]['descricao']),
+                  value: _listaTarefas[index]['ok'],
+                  onChanged: (value) {},
+                );
+              },
+            ),
+          ),
+
+11 - Incluir entre as propridades value e onChanged, a propriedade secondary:
+
+    secondary: CircleAvatar(),
+
+12 - Em CircleAvatar, preencher suas caraterísticas:
+
+    backgroundColor: Colors.white,
+    foregroundColor: Colors.green, 
+    child: Icon(Icons.check),
+
+    Biblioteca de ícones do Flutter:
+    https://api.flutter.dev/flutter/material/Icons-class.html
+	https://fonts.google.com/icons?selected=Material+Icons
+
+13 - Agora vamos inserir uma pequena ação para trocar o ícone conforme o status da tarefa
+
+foregroundColor: _listaTarefas[index]['ok']
+                          ? Colors.green
+                          : Colors.red,
+
+child: Icon(_listaTarefas[index]['ok']
+                        ? Icons.check
+                        : Icons.close),
+
+14 - O próximo filho de column agora será o campo para o usuário digitar. Inserir um Form e como seu filho um TextFormField
+
+15 - Dentro de TextFormField, inserir as seguintes propridades:
+
+keyboardType: TextInputType.text,
+              textInputAction: TextInputAction.done,
+              decoration: InputDecoration(
+                labelText: 'Tarefa',
+                hintText: 'Entre com a tarefa',
+                border: OutlineInputBorder(borderSide: BorderSide()),
+              ),  
+			  
+16 - Como o campo de formulário ficou muito colado às laterais e na parte de baixo da tela, envolver o widget Form com um container e incluir a propriedade:
+	
+	padding: EdgeInsets.all(10),
+
+17 - Para apagar uma tarefa vamos utilizar arrastar a tarefa para o lado. Pra isso envolver o Widget CheckboxListTile com um Dismissible. Como esse componente precisa de uma chave única para controlar seus itens, inserir a propriedade key com uma chave aleatória:
+
+key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+
+Agora é possível deslizar a tarefa para os lados
+
+18 - Abaixo de key, incluir a propriedade background com as seguintes propridades:
+      
+      background: Container(
+        color: Colors.red,
+        child: Align(
+          alignment: Alignment(-0.9, 0),
+          child: Icon(
+            Icons.delete,
+            color: Colors.white,
+          ),
+        ),
+      ),
+
+
+
+19 - Quando uma tarefa for excluída, será apresentado para o usuário uma mensagem com a possibilidade de desfazer a sua ação. Para isso será utilizada uma SnackBar. Inserir mais uma propriedade em Dismissible (fora de CheckboxListTile):
+
+
+	onDismissed: (direcao) {
+		print('Direção: $direcao');
+		if (direcao == DismissDirection.startToEnd) {
+		  print('Direção: Início para o Fim');
+		}
+		if (direcao == DismissDirection.endToStart) {
+		  print('Direção: Fím para o Início');
+		}
+		ScaffoldMessenger.of(context).showSnackBar(
+		  SnackBar(
+			content: Text(
+			  'Tarefa removida.',
+			  style: TextStyle(color: Colors.yellow),
+			),
+			action: SnackBarAction(
+			  label: 'Desfazer',
+			  onPressed: () {},
+			),
+		  ),
+		);
+	  },
+	  
+	  obs. Lembrando que para funcionamento do SnackBar, a dependência fluttertoast (https://pub.dev/packages/fluttertoast) já deve estar presente no arquivo pubspec.yaml conforme exemplo a aseguir:
+	  
+	  	dependencies:
+	  flutter:
+		sdk: flutter
+	  fluttertoast: ^8.0.9
+	  
+	  Reparar que é possível criar eventos de acordo com a direção em que é realizado o deslize de Dismissible (do início para o fim ou do fim para o início)
+	  
+	  Vide if contendo a variável direcao. Inicialmente é impresso no console a direção que está sendo executada pelo Dismissible, a seguir as estruturas condicionais podem ser utilizadas para chamar os eventos desejados
+
+20 - No caso desta aplicação será permitido deslizar o Dismissible do início para o fim. Sendo assim, incluir a propriedade direction: 
+
+    direction: DismissDirection.startToEnd,
+
+21 - Incluir também dentro da propriedade SnackBar, a proprieade duration: para aumentar o tempo de exposição da snackbar
+
+SnackBar(
+  duration: Duration(seconds: 2),
+
+22 - Dentro de Form, no TextFormField, incluir a propriedade  onFieldSubmitted:  criando seu respectivo método
+
+	onFieldSubmitted: (texto) {
+		_onSubmit(context, texto);
+	},
+
+	void _onSubmit(context, texto) {
+		if (texto.toString().isNotEmpty) {
+		  print('Tarefa adicionada!!!!');
+		} else {
+		  print('Sem Tarefa preenchida');
+		}
+	}
+  
+================================================================================
+
+À partir desse ponto vamos começar a incluir a lógica da aplicação
+
+================================================================================
+  
+23 - Vamos agora iniciar o processo para salvar as tarefas no dispositivo. Incluir no arquivo pubspec.yaml incluir uma nova dependência (plugin path_provider: https://pub.dev/packages/path_provider) abaixo de cupertino_icons: 
+  
+	dependencies:
+	  flutter:
+		sdk: flutter
+	  fluttertoast: ^8.0.8
+	  path_provider: ^2.0.11
+  
+  obs. Caso seja apresentada mensagem de erro devido à versão Dart estar desatualizada, basta rodar no terminal: flutter upgrade
+  
+24 - Criar um novo arquivo chamado tarefasDao.dart e nele incluir as operações para salvar e recuperar dados
+ 
+
+25 - Dentro do arquivo tarefasDAO, incluir o seguinte conteúdo:
+
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:path_provider/path_provider.dart';
+
+class TarefasDao {
+  
+  Future<File> _getFile() async {
+    final directory = await getApplicationDocumentsDirectory();
+	print(directory);
+    return File('${directory.path}/data.json');
+  }
+
+  Future<File> saveData(list) async {
+    String data = json.encode(list);
+    final file = await _getFile();
+    return file.writeAsString(data);
+  }
+
+  Future<String?> readData() async {
+    try {
+      final file = await _getFile();
+      return file.readAsString();
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+}
+
+
+26 - Pode fechar o arquivo tarefasDAO.dart e voltar para o arquivo home_page.dart. 
+
+27 - No arquivo home_page.dart, apagar todo o conteúdo da _listaTarefas
+
+  List _listaTarefas = [];
+  
+28 - Logo abaixo da lista de tarefas, instanciar o objeto da classe TarefasDao:
+  
+  TarefasDao db = TarefasDao();
+  
+  
+29 - Para que a lista de tarefas possa ser carregada quando a aplicação for iniciada, apagar a instrução  print(_listaTarefas);  e incluir no método initState o seguinte: 
+
+
+	db.readData().then(
+      (data) {
+        setState(() {
+          _listaTarefas = json.decode(data!);
+        });
+      },
+    );
+	
+Não esquecer de efetuar o import da classe TarefasDao e o import 'dart:convert';
+
+Repare que é necessário que a lista de tarefas seja envolvida pelo setState por se tratar do retorno de um objeto futuro. Dessa forma, o método setState avisa o Flutter quando os dados da lista foram efetivamente carregados para que a tela possa ser novamente redesenhada no ponto em que a alteração ocorreu
+
+30 - Declarar no início da classe um controlador de conteúdo para o campo de nova tarefa:
+
+final _tarefaController = TextEditingController();
+
+31 - Dentro de Form, no widget TextFormField: incluir a propridade controller:
+
+			controller: _tarefaController,
+
+32 - Atualizar o método _onSubmit: para que ele agora possa salvar novas tarefas criadas
+
+  void _onSubmit(context, texto) {
+    if (texto.toString().isNotEmpty) {
+      setState(() {
+        Map<String, dynamic> novaTarefa = {};
+        novaTarefa['descricao'] = _tarefaController.text;
+        _tarefaController.clear();
+        novaTarefa['ok'] = false;
+        _listaTarefas.add(novaTarefa);
+        db.saveData(_listaTarefas);
+      });
+      print('Tarefa adicionada!!!!');
+    } else {
+      print('Sem Tarefa preenchida');
+    }
+  }
+  
+Note que mais uma vez o método setState precisa ser acionado para que o flutter atualize a visualização da lista de tarefas após a inclusão de uma nova tarefa
+
+
+33 - No CheckboxListTile, alterar a propridade onChanged: (value) {}, para que o checkbox possa ser atualizado conforme o desejo do usuário:
+
+	onChanged: (checked) {
+	  setState(() {
+		_listaTarefas[index]['ok'] = checked;
+		db.saveData(_listaTarefas);
+	  });
+	},
+	
+Dessa forma toda vez que o usuário marcar/desmarcar o checkbox, os dados e a lista serão atualizados
+
+34 - Para que as tarefas possam ser excluídas, incluir no início da classe as variáveis:
+
+	Map<String, dynamic>? _ultimoItemRemovido;
+	int? _posicaoUltimoItemRemovido;
+
+
+35 - Em Dismissible, logo abaixo de onDismissed: (direcao) {
+	
+	- inserir:
+		_ultimoItemRemovido = Map.from(_listaTarefas[index]);
+        _posicaoUltimoItemRemovido = index;
+        _listaTarefas.removeAt(index);
+        db.saveData(_listaTarefas);
+
+36 - Para implementar o desfazer no SnackBar, alerar a propridade onPressed para:
+
+	  onPressed: () {
+		setState(() {
+		  _listaTarefas.insert(_posicaoUltimoItemRemovido!, _ultimoItemRemovido);
+		  db.saveData(_listaTarefas);
+		});
+	  },
+	  
+37 - Ainda no SnackBar, alterar a propridade content: para que seja apresentada a descrição da tarefa que está sendo excluída 
+
+		content: Text(
+		  '${_ultimoItemRemovido!['descricao']} removido(a).',
+		  style: TextStyle(color: Colors.yellow),
+		),
+
+38 - Para finalizar envolver o widget ListView.builder com o widget RefreshIndicator. A seguir incluir a proprieadade:
+
+	onRefresh: _atualiza,
+
+39 - Construir o método _atualiza:
+
+	Future<void> _atualiza() async {
+		await Future.delayed(Duration(seconds: 1));
+		setState(() {
+		  _listaTarefas.sort((a, b) {
+			return (a['ok'].toString()).compareTo(b['ok'].toString());
+		  });
+		  db.saveData(_listaTarefas);
+		});
+	  }
+
+
+================================================================================
+
+ Alterações Opcionais
+
+================================================================================
+
+39 - Opcionalmente podemos criar uma nova funcionalidade em que ao deslizar as tarefas da direita para esquerda, trocamos o valor do check. 
+
+40 - Em Dismissible, comentar ou apagar a propriedade direction: 
+
+    direction: DismissDirection.startToEnd,
+
+41 - Em Dismissible, após a propriedade background, acrescentar a propriedade secondaryBackground:
+
+	secondaryBackground: Container(
+	  color: Colors.green,
+	  child: Align(
+		alignment: Alignment(0.9, 0),
+		child: Icon(
+		  Icons.check,
+		  color: Colors.white,
+		),
+	  ),
+	),
+
+
+42 - Altear em Dismissible o conteúdo do parâmetro onDismissed para o seguinte:
+
+	onDismissed: (direcao) {
+	  _ultimoItemRemovido = Map.from(_listaTarefas[index]);
+	  _posicaoUltimoItemRemovido = index;
+	  _listaTarefas.removeAt(index);
+	  db.saveData(_listaTarefas);
+	  print('Direção: $direcao');
+	  if (direcao == DismissDirection.startToEnd) {
+		ScaffoldMessenger.of(context).showSnackBar(
+		  SnackBar(
+			duration: Duration(seconds: 2),
+			content: Text(
+			  '${_ultimoItemRemovido!['descricao']} removido(a).',
+			  style: TextStyle(color: Colors.yellow),
+			),
+			action: SnackBarAction(
+			  label: 'Desfazer',
+			  onPressed: () {
+				setState(() {
+				  _listaTarefas.insert(
+					  _posicaoUltimoItemRemovido!,
+					  _ultimoItemRemovido);
+				  db.saveData(_listaTarefas);
+				});
+			  },
+			),
+		  ),
+		);
+		print('Direção: Início para o Fim');
+	  }
+	  if (direcao == DismissDirection.endToStart) {
+		print('Direção: $direcao');
+		setState(() {
+		  _listaTarefas.insert(
+			  _posicaoUltimoItemRemovido!, _ultimoItemRemovido);
+		  _listaTarefas[index]['ok'] =
+			  !_listaTarefas[index]['ok'];
+		  db.saveData(_listaTarefas);
+		});
+	  }
+	},
